@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Góc nhìn{% endblock %}
+
+{% block content %}
+<section class="stats-hero shell" id="top">
+  <div class="reveal">
+    <a class="back-link" href="{{ url_for('index') }}">← Trở về cuốn sổ</a>
+    <p class="eyebrow"><span></span>Góc nhìn từ cuốn sổ</p>
+    <h1>Những con số<br>cũng biết <em>kể chuyện.</em></h1>
+  </div>
+  <p class="stats-intro reveal" data-delay="1">Một lát cắt nhỏ về những người đã ghé qua, những lời được để lại và câu chuyện đang lớn lên từng ngày.</p>
+</section>
+
+<section class="stats-content shell">
+  <div class="metric-grid">
+    <article class="metric-card accent-card reveal">
+      <span class="metric-label">Tổng lời nhắn</span>
+      <strong>{{ '%02d' | format(total) }}</strong>
+      <p>mảnh ký ức đang được lưu giữ</p>
+      <svg viewBox="0 0 160 80" aria-hidden="true"><path d="M4 66C34 62 30 25 59 34s24 30 48 4c12-13 20-24 49-20"/></svg>
+    </article>
+    <article class="metric-card reveal" data-delay="1">
+      <span class="metric-label">Người ghé qua</span>
+      <strong>{{ '%02d' | format(unique_authors) }}</strong>
+      <p>người đã để lại dấu ấn riêng</p>
+    </article>
+    <article class="metric-card reveal" data-delay="2">
+      <span class="metric-label">Người viết nhiều nhất</span>
+      {% if top_authors %}
+        <strong class="metric-name">{{ top_authors[0][0] }}</strong>
+        <p>{{ top_authors[0][1] }} lời nhắn đã được gửi</p>
+      {% else %}
+        <strong class="metric-name">Chưa có</strong><p>Cuốn sổ đang chờ dòng đầu tiên</p>
+      {% endif %}
+    </article>
+  </div>
+
+  <div class="insight-grid">
+    <article class="chart-panel reveal">
+      <div class="panel-heading">
+        <div><span class="panel-kicker">01 — Tần suất</span><h2>Những người viết nhiều nhất</h2></div>
+        <span class="panel-badge">Top 5</span>
+      </div>
+      {% if chart_b64 %}
+        <img src="data:image/png;base64,{{ chart_b64 }}" alt="Biểu đồ số lời nhắn của năm người viết nhiều nhất">
+      {% else %}
+        <div class="chart-empty">Chưa có đủ dữ liệu để vẽ biểu đồ.</div>
+      {% endif %}
+    </article>
+
+    <article class="ranking-panel reveal" data-delay="1">
+      <div class="panel-heading"><div><span class="panel-kicker">02 — Xếp hạng</span><h2>Bảng dấu ấn</h2></div></div>
+      {% if top_authors %}
+        <ol class="ranking-list">
+          {% for name, count in top_authors %}
+          <li>
+            <span class="ranking-number">{{ '%02d' | format(loop.index) }}</span>
+            <span class="ranking-avatar">{{ name[0] | upper }}</span>
+            <span class="ranking-name">{{ name }}</span>
+            <strong>{{ count }}</strong>
+          </li>
+          {% endfor %}
+        </ol>
+      {% else %}
+        <p class="ranking-empty">Bảng xếp hạng sẽ xuất hiện khi có lời nhắn.</p>
+      {% endif %}
+    </article>
+  </div>
+
+  {% if latest_entry %}
+  <article class="latest-note reveal">
+    <span class="latest-label">Lời nhắn mới nhất</span>
+    <blockquote>“{{ latest_entry.message }}”</blockquote>
+    <div><strong>{{ latest_entry.name }}</strong><span>{{ latest_entry.timestamp }}</span></div>
+  </article>
+  {% endif %}
+
+  <div class="stats-cta reveal">
+    <p>Con số tiếp theo có thể là của bạn.</p>
+    <a class="button button-primary" href="{{ url_for('add') }}">Viết lời nhắn <span>↗</span></a>
+  </div>
+</section>
+{% endblock %}

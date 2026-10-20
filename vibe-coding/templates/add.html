@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Viết lời nhắn{% endblock %}
+
+{% block content %}
+<section class="compose shell" id="top">
+  <div class="compose-intro reveal">
+    <a class="back-link" href="{{ url_for('index') }}">← Trở về cuốn sổ</a>
+    <p class="eyebrow"><span></span>Một trang giấy dành cho bạn</p>
+    <h1>Viết điều bạn<br>muốn <em>giữ lại.</em></h1>
+    <p>Lời chào, một kỷ niệm, hay chỉ là vài chữ cho ngày hôm nay. Những điều chân thành luôn đáng được lưu giữ.</p>
+
+    <div class="compose-note">
+      <span>01</span>
+      <p>Tên của bạn sẽ được hiển thị công khai cùng lời nhắn.</p>
+    </div>
+    <div class="compose-note">
+      <span>02</span>
+      <p>Hãy giữ nội dung lịch sự, tích cực và tử tế.</p>
+    </div>
+  </div>
+
+  <div class="compose-panel reveal" data-delay="1">
+    {% if error %}
+      <div class="form-alert" role="alert"><span>!</span>{{ error }}</div>
+    {% endif %}
+
+    <form action="{{ url_for('add') }}" method="post" id="guest-form" novalidate>
+      <div class="field-group">
+        <div class="field-label"><label for="name">Tên của bạn</label><span id="name-count">0 / 80</span></div>
+        <input id="name" name="name" type="text" value="{{ name }}" maxlength="80" placeholder="Ví dụ: Minh Anh" autocomplete="name" required>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label"><label for="message">Lời nhắn</label><span id="message-count">0 / 500</span></div>
+        <textarea id="message" name="message" rows="7" maxlength="500" placeholder="Có những điều nhỏ bé nào bạn muốn lưu lại?" required>{{ message }}</textarea>
+      </div>
+
+      <div class="live-preview" id="live-preview">
+        <span class="preview-label">Xem trước</span>
+        <blockquote id="preview-message">“Lời nhắn của bạn sẽ xuất hiện ở đây.”</blockquote>
+        <strong id="preview-name">— Tên của bạn</strong>
+      </div>
+
+      <div class="form-footer">
+        <p>Bằng việc gửi, bạn đồng ý chia sẻ lời nhắn này trong guestbook.</p>
+        <button class="button button-primary" type="submit" id="submit-button">
+          <span class="submit-text">Lưu lời nhắn</span>
+          <span class="submit-loading">Đang lưu…</span>
+          <span aria-hidden="true">↗</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}
