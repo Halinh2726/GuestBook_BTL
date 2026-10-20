@@ -1,0 +1,91 @@
+﻿{% extends "base.html" %}
+{% block title %}Thống kê{% endblock %}
+
+{% block content %}
+<section class="stats-section">
+  <div class="section-header">
+    <h1 class="section-title">📊 Thống kê lời nhắn</h1>
+    <p class="section-sub">Tổng quan về hoạt động của sổ lưu bút</p>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card kpi-total" id="kpi-total">
+      <div class="kpi-icon">📝</div>
+      <div class="kpi-info">
+        <span class="kpi-num">{{ total }}</span>
+        <span class="kpi-label">Tổng lời nhắn</span>
+      </div>
+    </div>
+    <div class="kpi-card kpi-authors" id="kpi-authors">
+      <div class="kpi-icon">👥</div>
+      <div class="kpi-info">
+        <span class="kpi-num">{{ top5 | length }}</span>
+        <span class="kpi-label">Người gửi (top 5)</span>
+      </div>
+    </div>
+    <div class="kpi-card kpi-top" id="kpi-top">
+      <div class="kpi-icon">🏆</div>
+      <div class="kpi-info">
+        {% if top5 %}
+          <span class="kpi-num kpi-name">{{ top5[0][0] }}</span>
+          <span class="kpi-label">Người gửi nhiều nhất</span>
+        {% else %}
+          <span class="kpi-num">—</span>
+          <span class="kpi-label">Chưa có dữ liệu</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Top 5 Leaderboard -->
+  <div class="leaderboard-card" id="leaderboard">
+    <h2 class="card-title">🥇 Top 5 người gửi nhiều nhất</h2>
+    {% if top5 %}
+      <ol class="leaderboard-list">
+        {% for name, count in top5 %}
+          <li class="leaderboard-item" style="animation-delay: {{ loop.index0 * 0.08 }}s">
+            <span class="rank rank-{{ loop.index }}">
+              {% if loop.index == 1 %}🥇
+              {% elif loop.index == 2 %}🥈
+              {% elif loop.index == 3 %}🥉
+              {% else %}#{{ loop.index }}
+              {% endif %}
+            </span>
+            <span class="lb-name">{{ name }}</span>
+            <div class="lb-bar-wrap">
+              <div class="lb-bar" style="width: {{ (count / top5[0][1] * 100) | round(1) }}%"></div>
+            </div>
+            <span class="lb-count">{{ count }} lời nhắn</span>
+          </li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <p>Chưa có dữ liệu thống kê.</p>
+        <a href="{{ url_for('add') }}" class="btn btn-primary" id="stats-write-btn">✍️ Gửi lời nhắn đầu tiên</a>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Matplotlib Chart -->
+  {% if chart_b64 %}
+  <div class="chart-card" id="chart-card">
+    <h2 class="card-title">📈 Biểu đồ cột — Số lời nhắn theo người gửi</h2>
+    <div class="chart-wrap">
+      <img src="data:image/png;base64,{{ chart_b64 }}"
+           alt="Biểu đồ số lời nhắn theo người gửi"
+           class="chart-img"
+           id="stats-chart"/>
+    </div>
+    <p class="chart-note">Biểu đồ được tạo tự động bằng <strong>Matplotlib</strong> 🐍</p>
+  </div>
+  {% endif %}
+
+  <div class="stats-actions">
+    <a href="{{ url_for('index') }}" class="btn btn-outline" id="back-btn">← Về trang chủ</a>
+    <a href="{{ url_for('add') }}" class="btn btn-primary" id="add-from-stats-btn">✍️ Gửi lời nhắn mới</a>
+  </div>
+</section>
+{% endblock %}

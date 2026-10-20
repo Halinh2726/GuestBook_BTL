@@ -1,0 +1,68 @@
+﻿{% extends "base.html" %}
+{% block title %}Trang chủ{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">✨ Sổ lưu bút trực tuyến</div>
+    <h1 class="hero-title">Chào mừng đến với<br/><span class="gradient-text">GuestBook</span></h1>
+    <p class="hero-sub">Để lại dấu ấn của bạn — mỗi lời nhắn là một kỷ niệm đáng trân trọng.</p>
+    <div class="hero-actions">
+      <a href="{{ url_for('add') }}" class="btn btn-primary btn-lg" id="hero-write-btn">
+        ✍️ Viết lời nhắn
+      </a>
+      <a href="{{ url_for('stats') }}" class="btn btn-outline btn-lg" id="hero-stats-btn">
+        📊 Xem thống kê
+      </a>
+    </div>
+  </div>
+  <div class="hero-counter">
+    <div class="counter-card">
+      <span class="counter-num">{{ entries | length }}</span>
+      <span class="counter-label">Lời nhắn</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── Entry List ── -->
+<section class="entries-section">
+  <div class="section-header">
+    <h2 class="section-title">💬 Tất cả lời nhắn</h2>
+    <span class="section-badge">{{ entries | length }} mục</span>
+  </div>
+
+  {% if entries %}
+    <div class="entries-grid" id="entries-grid">
+      {% for entry in entries %}
+        <article class="entry-card" id="entry-{{ entry.id }}" style="animation-delay: {{ loop.index0 * 0.05 }}s">
+          <div class="entry-header">
+            <div class="entry-avatar">{{ entry.name[0] | upper }}</div>
+            <div class="entry-meta">
+              <strong class="entry-name">{{ entry.name }}</strong>
+              <span class="entry-time">🕐 {{ entry.timestamp }}</span>
+            </div>
+            <span class="entry-id">#{{ entry.id }}</span>
+          </div>
+          <p class="entry-message">{{ entry.message }}</p>
+          <div class="entry-footer">
+            <form action="{{ url_for('delete', entry_id=entry.id) }}" method="POST"
+                  class="delete-form"
+                  onsubmit="return confirmDelete({{ entry.id }})">
+              <button type="submit" class="btn btn-danger btn-sm" id="delete-btn-{{ entry.id }}">
+                🗑️ Xóa
+              </button>
+            </form>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">📭</div>
+      <h3>Chưa có lời nhắn nào</h3>
+      <p>Hãy là người đầu tiên để lại lời nhắn!</p>
+      <a href="{{ url_for('add') }}" class="btn btn-primary" id="empty-write-btn">✍️ Viết ngay</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}
