@@ -1,78 +1,51 @@
 ﻿{% extends "base.html" %}
+
 {% block title %}Gửi lời nhắn{% endblock %}
 
 {% block content %}
-<section class="form-section">
-  <div class="form-container">
-    <div class="form-header">
-      <div class="form-icon-wrap">✍️</div>
-      <h1 class="form-title">Gửi lời nhắn</h1>
-      <p class="form-sub">Chia sẻ suy nghĩ, cảm nhận hoặc lời chào của bạn.</p>
-    </div>
 
-    <!-- Error Banner -->
-    {% if error %}
-    <div class="alert alert-error" id="form-error" role="alert">
-      <span class="alert-icon">⚠️</span>
-      <span>{{ error }}</span>
-    </div>
-    {% endif %}
+<div class="form-section">
 
-    <!-- Add Form -->
-    <form action="{{ url_for('add') }}" method="POST" class="guest-form" id="guest-form" novalidate>
-      <div class="form-group">
-        <label class="form-label" for="name">Tên của bạn <span class="required">*</span></label>
-        <div class="input-wrapper">
-          <span class="input-icon">👤</span>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            class="form-input {% if error and not name %}input-error{% endif %}"
-            placeholder="Nhập tên của bạn..."
-            value="{{ name }}"
-            maxlength="80"
-            autocomplete="name"
-          />
-        </div>
-        <span class="char-count" id="name-count">0 / 80</span>
-      </div>
+  <h1>Gửi lời nhắn</h1>
 
-      <div class="form-group">
-        <label class="form-label" for="message">Lời nhắn <span class="required">*</span></label>
-        <div class="input-wrapper textarea-wrapper">
-          <span class="input-icon textarea-icon">💬</span>
-          <textarea
-            id="message"
-            name="message"
-            class="form-input form-textarea {% if error and not message %}input-error{% endif %}"
-            placeholder="Nhập lời nhắn của bạn..."
-            maxlength="500"
-            rows="5"
-          >{{ message }}</textarea>
-        </div>
-        <span class="char-count" id="msg-count">0 / 500</span>
-      </div>
+  <p>Hãy nhập tên và lời nhắn của bạn.</p>
 
-      <div class="form-actions">
-        <a href="{{ url_for('index') }}" class="btn btn-outline" id="cancel-btn">← Hủy</a>
-        <button type="submit" class="btn btn-primary" id="submit-btn">
-          <span class="btn-text">📨 Gửi lời nhắn</span>
-          <span class="btn-spinner hidden" aria-hidden="true">⏳</span>
-        </button>
-      </div>
-    </form>
-  </div>
+  <!-- Hien thi loi neu co -->
+  {% if error %}
+  <p style="color: red;">{{ error }}</p>
+  {% endif %}
 
-  <!-- Tips Card -->
-  <div class="tips-card">
-    <h3>💡 Lưu ý</h3>
-    <ul>
-      <li>Cả hai trường <strong>Tên</strong> và <strong>Lời nhắn</strong> đều bắt buộc.</li>
-      <li>Tên tối đa <strong>80 ký tự</strong>.</li>
-      <li>Lời nhắn tối đa <strong>500 ký tự</strong>.</li>
-      <li>Hãy giữ nội dung lịch sự và thân thiện 😊</li>
-    </ul>
-  </div>
-</section>
+  <!-- Form nhap loi nhan -->
+  <form action="{{ url_for('add') }}" method="POST">
+
+    <!-- Nhap ten -->
+    <p>
+      <label for="name">Tên của bạn:</label>
+    </p>
+
+    <p>
+      <input type="text" id="name" name="name" value="{{ name }}" placeholder="Nhập tên của bạn" maxlength="80">
+    </p>
+
+    <!-- Nhap noi dung -->
+    <p>
+      <label for="message">Lời nhắn:</label>
+    </p>
+
+    <p>
+      <textarea id="message" name="message" rows="5" cols="40" maxlength="500"
+        placeholder="Nhập lời nhắn của bạn">{{ message }}</textarea>
+    </p>
+
+    <!-- Nut gui -->
+    <p>
+      <button type="submit">Gửi lời nhắn</button>
+
+      <a href="{{ url_for('index') }}">Hủy</a>
+    </p>
+
+  </form>
+
+</div>
+
 {% endblock %}

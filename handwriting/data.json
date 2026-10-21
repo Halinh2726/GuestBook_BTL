@@ -1,20 +1,14 @@
 [
-  {
-    "id": 1,
-    "name": "Nguyễn Minh Hùng",
-    "message": "Hôm nay trời thật đẹp",
-    "timestamp": "20/10/2026 09:20"
-  },
-  {
-    "id": 2,
-    "name": "Lưu Thị Ngát",
-    "message": "Trời mưa",
-    "timestamp": "20/10/2026 09:20"
-  },
-  {
-    "id": 3,
-    "name": "Nguyễn Minh Hùng",
-    "message": "Hôm nay phải đi học",
-    "timestamp": "20/10/2026 09:20"
-  }
+    {
+        "id": 1,
+        "name": "Nguyễn Minh Hùng",
+        "message": "Hôm nay trời thật đẹp",
+        "timestamp": "20/10/2026 09:20"
+    },
+    {
+        "id": 2,
+        "name": "Lưu Thị Ngát",
+        "message": "Trời mưa",
+        "timestamp": "20/10/2026 09:20"
+    }
 ]

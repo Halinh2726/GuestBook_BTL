@@ -1,8 +1,8 @@
+
 import json
 import os
 import base64
 from datetime import datetime
-from collections import Counter
 
 import matplotlib
 matplotlib.use("Agg")
@@ -11,162 +11,188 @@ import matplotlib.pyplot as plt
 from flask import Flask, render_template, request, redirect, url_for, flash
 
 app = Flask(__name__)
-app.secret_key = "guestbook-secret-key-2024"
-DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data.json")
-STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+app.secret_key = "123456"
+
+DATA_FILE = "data.json"
 
 
+# Doc du lieu tu file JSON
 def load_entries():
-    """Doc danh sach loi nhan tu file JSON khi khoi dong."""
     if os.path.exists(DATA_FILE):
-        try:
-            with open(DATA_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except (json.JSONDecodeError, IOError):
-            return []
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            entries = json.load(f)
+            return entries
+
     return []
 
 
+# Luu du lieu vao file JSON
 def save_entries(entries):
-    """Ghi danh sach loi nhan ra file JSON de luu tru lau dai."""
     with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(entries, f, ensure_ascii=False, indent=2)
+        json.dump(entries, f, ensure_ascii=False, indent=4)
 
 
+# Tao ID moi
 def next_id(entries):
-    """Sinh ID tu tang an toan (khong bi trung ke ca sau khi xoa)."""
-    if not entries:
-        return 1
-    return max(e["id"] for e in entries) + 1
+    max_id = 0
+
+    for entry in entries:
+        if entry["id"] > max_id:
+            max_id = entry["id"]
+
+    return max_id + 1
 
 
-# ── Route / (GET) ──────────────────────────────────────────────────────────────
+# Trang chu - Hien thi danh sach loi nhan
 @app.route("/")
 def index():
-    """
-    Buoi 1: Lay danh sach tat ca loi nhan va render index.html.
-    Truyen bien `entries` vao template.
-    """
     entries = load_entries()
-    entries_sorted = sorted(entries, key=lambda e: e["id"], reverse=True)
-    return render_template("index.html", entries=entries_sorted)
+
+    entries.sort(key=lambda x: x["id"], reverse=True)
+
+    return render_template("index.html", entries=entries)
 
 
-# ── Route /add (GET, POST) ─────────────────────────────────────────────────────
+# Them loi nhan
 @app.route("/add", methods=["GET", "POST"])
 def add():
-    """
-    Buoi 1:
-    GET : Hien thi form nhap name + message.
-    POST: Validate -> luu -> redirect / hoac render lai form voi loi.
-    """
     error = None
+    name = ""
+    message = ""
+
     if request.method == "POST":
         name = request.form.get("name", "").strip()
         message = request.form.get("message", "").strip()
-        # Validate: khong de trong ca hai truong
-        if not name and not message:
-            error = "Vui long nhap ca ten va loi nhan."
-        elif not name:
-            error = "Vui long nhap ten cua ban."
-        elif not message:
+
+        # Kiem tra du lieu nhap
+        if name == "" and message == "":
+            error = "Vui long nhap ten va loi nhan."
+
+        elif name == "":
+            error = "Vui long nhap ten."
+
+        elif message == "":
             error = "Vui long nhap loi nhan."
+
         else:
             entries = load_entries()
+
+            # Tao loi nhan moi
             new_entry = {
                 "id": next_id(entries),
                 "name": name,
                 "message": message,
                 "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M")
             }
+
+            # Them vao danh sach
             entries.append(new_entry)
+
+            # Luu vao file
             save_entries(entries)
-            flash("Loi nhan cua ban da duoc gui thanh cong!", "success")
+
+            flash("Them loi nhan thanh cong!", "success")
+
             return redirect(url_for("index"))
-        # Neu loi: render lai form voi thong bao loi
-        return render_template("add.html", error=error, name=name, message=message)
-    # GET: hien thi form trong
-    return render_template("add.html", error=None, name="", message="")
+
+    return render_template(
+        "add.html",
+        error=error,
+        name=name,
+        message=message
+    )
 
 
-# ── Route /delete/<int:id> (POST hoac GET) ────────────────────────────────────
-@app.route("/delete/<int:entry_id>", methods=["POST", "GET"])
+# Xoa loi nhan theo ID
+@app.route("/delete/<int:entry_id>", methods=["GET", "POST"])
 def delete(entry_id):
-    """
-    Buoi 1: Xoa entry co ID tuong ung, sau do redirect ve /.
-    """
     entries = load_entries()
-    original_len = len(entries)
-    entries = [e for e in entries if e["id"] != entry_id]
-    if len(entries) < original_len:
-        save_entries(entries)
-        flash("Da xoa loi nhan so " + str(entry_id), "info")
+
+    new_entries = []
+    found = False
+
+    for entry in entries:
+        if entry["id"] == entry_id:
+            found = True
+        else:
+            new_entries.append(entry)
+
+    if found:
+        save_entries(new_entries)
+        flash("Da xoa loi nhan!", "info")
     else:
-        flash("Khong tim thay loi nhan so " + str(entry_id), "warning")
+        flash("Khong tim thay loi nhan!", "warning")
+
     return redirect(url_for("index"))
 
 
-# ── Route /stats (GET) ────────────────────────────────────────────────────────
+# Trang thong ke
 @app.route("/stats")
 def stats():
-    """
-    Buoi 2: Hien thi thong ke:
-      - Tong so loi nhan
-      - Top 5 nguoi gui nhieu nhat
-      - Bieu do cot bang Matplotlib -> nhung vao HTML dang base64
-    """
     entries = load_entries()
+
+    # Tong so loi nhan
     total = len(entries)
-    name_counter = Counter(e["name"] for e in entries)
-    top5 = name_counter.most_common(5)
+
+    # Dem so loi nhan cua tung nguoi
+    count = {}
+
+    for entry in entries:
+        name = entry["name"]
+
+        if name in count:
+            count[name] = count[name] + 1
+        else:
+            count[name] = 1
+
+    # Sap xep theo so loi nhan giam dan
+    result = sorted(count.items(), key=lambda x: x[1], reverse=True)
+
+    # Lay 5 nguoi gui nhieu nhat
+    top5 = result[:5]
 
     chart_b64 = None
-    if top5:
-        names = [t[0] for t in top5]
-        counts = [t[1] for t in top5]
 
-        # Ve bieu do cot bang Matplotlib
-        fig, ax = plt.subplots(figsize=(8, 4.5))
-        fig.patch.set_facecolor("#0F172A")
-        ax.set_facecolor("#1E293B")
+    if len(top5) > 0:
+        names = []
+        numbers = []
 
-        palette = ["#6C63FF", "#7C3AED", "#EC4899", "#06B6D4", "#10B981"]
-        colors = palette[:len(names)]
+        for name, number in top5:
+            names.append(name)
+            numbers.append(number)
 
-        bars = ax.bar(names, counts, color=colors, edgecolor="none", width=0.55, zorder=3)
+        # Ve bieu do cot
+        plt.figure(figsize=(8, 4))
 
-        for bar, cnt in zip(bars, counts):
-            ax.text(
-                bar.get_x() + bar.get_width() / 2,
-                bar.get_height() + 0.05,
-                str(cnt),
-                ha="center", va="bottom",
-                color="#E2E8F0", fontsize=11, fontweight="bold"
-            )
+        plt.bar(names, numbers, color="skyblue")
 
-        ax.set_title("Top nguoi gui loi nhan", color="#E2E8F0",
-                     fontsize=14, fontweight="bold", pad=14)
-        ax.set_xlabel("Nguoi gui", color="#94A3B8", fontsize=10, labelpad=8)
-        ax.set_ylabel("So loi nhan", color="#94A3B8", fontsize=10, labelpad=8)
-        ax.tick_params(colors="#94A3B8")
-        ax.spines[:].set_visible(False)
-        ax.yaxis.grid(True, color="#334155", linewidth=0.6, zorder=0)
-        ax.set_axisbelow(True)
-        plt.tight_layout(pad=1.5)
+        plt.title("Top 5 nguoi gui loi nhan")
+        plt.xlabel("Nguoi gui")
+        plt.ylabel("So loi nhan")
 
-        # Luu tam thanh file PNG trong static/
-        os.makedirs(STATIC_DIR, exist_ok=True)
-        chart_path = os.path.join(STATIC_DIR, "stats.png")
-        plt.savefig(chart_path, dpi=130, facecolor=fig.get_facecolor())
-        plt.close(fig)
+        plt.tight_layout()
 
-        # Encode sang base64 de nhung thang vao HTML
-        with open(chart_path, "rb") as img_file:
-            chart_b64 = base64.b64encode(img_file.read()).decode("utf-8")
+        # Luu bieu do vao file PNG
+        os.makedirs("static", exist_ok=True)
 
-    return render_template("stats.html", total=total, top5=top5, chart_b64=chart_b64)
+        chart_path = "static/stats.png"
+
+        plt.savefig(chart_path)
+        plt.close()
+
+        # Chuyen anh sang base64
+        with open(chart_path, "rb") as f:
+            image_data = f.read()
+            chart_b64 = base64.b64encode(image_data).decode("utf-8")
+
+    return render_template(
+        "stats.html",
+        total=total,
+        top5=top5,
+        chart_b64=chart_b64
+    )
 
 
+# Chay chuong trinh
 if __name__ == "__main__":
-    os.makedirs(STATIC_DIR, exist_ok=True)
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=True)
